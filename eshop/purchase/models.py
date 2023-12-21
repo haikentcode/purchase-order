@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator
 
 
 class Supplier(models.Model):
-    name = models.CharField()
+    name = models.CharField(max_length=1024)
     email = models.EmailField()
 
     class Meta:
@@ -16,9 +16,9 @@ class Supplier(models.Model):
 
 
 class Order(models.Model):
-    supplier = models.ForeignKey(Supplier)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     order_time = models.DateTimeField()
-    order_number = models.BigAutoField(db_index=True)
+    order_number = models.IntegerField(db_index=True)
     total_quantity = models.IntegerField(validators=[MinValueValidator(0)])
     total_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     total_tax = models.FloatField(validators=[MinValueValidator(0.0)])
@@ -33,13 +33,13 @@ class Order(models.Model):
 
 
 class LineItem(models.Model):
-    item_name = models.CharField()
+    item_name = models.CharField(max_length=1024)
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
     price_without_tax = models.FloatField(validators=[MinValueValidator(0.0)])
     tax_name = models.IntegerField(validators=[MinValueValidator(0)])
     tax_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     line_total = models.FloatField(validators=[MinValueValidator(0.0)])
-    purchase_order = models.ForeignKey(Order)
+    purchase_order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Line Item"
