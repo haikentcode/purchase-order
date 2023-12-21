@@ -6,6 +6,14 @@ class Supplier(models.Model):
     name = models.CharField()
     email = models.EmailField()
 
+    class Meta:
+        verbose_name = "Supplier"
+        verbose_name_plural = "Suppliers"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 
 class Order(models.Model):
     supplier = models.ForeignKey(Supplier)
@@ -32,3 +40,11 @@ class LineItem(models.Model):
     tax_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     line_total = models.FloatField(validators=[MinValueValidator(0.0)])
     purchase_order = models.ForeignKey(Order)
+
+    class Meta:
+        verbose_name = "Line Item"
+        verbose_name_plural = "Line Items"
+        ordering = ['item_name', 'quantity']
+
+    def __str__(self):
+        return f"{self.item_name} - {self.quantity} units"
