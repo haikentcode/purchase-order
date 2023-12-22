@@ -32,6 +32,11 @@ class OrderSerializer(serializers.ModelSerializer):
     line_items = LineItemSerializer(many=True)
     order_number = serializers.PrimaryKeyRelatedField(read_only=True)
 
+    # computed field
+    total_quantity = serializers.ReadOnlyField()
+    total_amount = serializers.ReadOnlyField()
+    total_tax = serializers.ReadOnlyField()
+
     class Meta:
         model = Order
         fields = '__all__'

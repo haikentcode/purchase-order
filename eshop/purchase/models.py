@@ -39,15 +39,19 @@ class Order(models.Model):
             self.order_number = order_number_instance
             self.order_time = timezone.now()
 
-        # Calculate total_quantity, total_amount, and total_tax based on LineItems
-        self.total_quantity = sum(
-            item.quantity for item in self.line_items.all())
-        self.total_amount = sum(
-            item.line_total for item in self.line_items.all())
-        self.total_tax = sum(
-            item.tax_amount for item in self.line_items.all())
-
         super().save(*args, **kwargs)
+
+    @property
+    def total_quantity(self):
+        return sum(item.quantity for item in self.line_items.all())
+
+    @property
+    def total_amount(self):
+        return sum(item.line_total for item in self.line_items.all())
+
+    @property
+    def total_tax(self):
+        return sum(item.tax_amount for item in self.line_items.all())
 
     class Meta:
         verbose_name = "Order"
