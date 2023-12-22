@@ -30,9 +30,9 @@ class SupplierViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
+    queryset = Order.objects.all()
 
 
 class LineItemViewSet(viewsets.ModelViewSet):

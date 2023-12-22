@@ -5,7 +5,7 @@ from purchase.views import OrderViewSet, LineItemViewSet, SupplierViewSet
 
 router = routers.DefaultRouter()
 router.register(r'suppliers', SupplierViewSet)
-router.register(r'orders', OrderViewSet)
+router.register(r'orders', OrderViewSet, basename='Order')
 router.register(r'line_items', LineItemViewSet)
 
 # Wire up our API using automatic URL routing.

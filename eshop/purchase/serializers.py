@@ -15,16 +15,22 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'name']
 
 
-class SupplierSerializer(serializers.HyperlinkedModelSerializer):
+class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
+        fields = '__all__'
 
 
-class OrderSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Order
-
-
-class LineItemSerializer(serializers.HyperlinkedModelSerializer):
+class LineItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = LineItem
+        fields = '__all__'
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    supplier = SupplierSerializer()
+    line_items = LineItemSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = '__all__'
