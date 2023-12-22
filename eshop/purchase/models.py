@@ -12,7 +12,7 @@ class Supplier(models.Model):
         verbose_name_plural = "Suppliers"
         ordering = ['name']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -42,15 +42,15 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def total_quantity(self):
+    def total_quantity(self) -> float:
         return sum(item.quantity for item in self.line_items.all())
 
     @property
-    def total_amount(self):
+    def total_amount(self) -> float:
         return sum(item.line_total for item in self.line_items.all())
 
     @property
-    def total_tax(self):
+    def total_tax(self) -> float:
         return sum(item.tax_amount for item in self.line_items.all())
 
     class Meta:
@@ -58,7 +58,7 @@ class Order(models.Model):
         verbose_name_plural = "Orders"
         ordering = ['-order_time']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Order {self.order_number} - {self.order_time}"
 
 
@@ -72,7 +72,7 @@ class LineItem(models.Model):
         Order, on_delete=models.CASCADE, related_name='line_items')
 
     @property
-    def line_total(self):
+    def line_total(self) -> float:
         return self.tax_amount + self.price_without_tax
 
     class Meta:
@@ -80,5 +80,5 @@ class LineItem(models.Model):
         verbose_name_plural = "Line Items"
         ordering = ['item_name', 'quantity']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.item_name} - {self.quantity} units"

@@ -3,6 +3,7 @@ from rest_framework import permissions, viewsets
 from purchase.serializers import GroupSerializer, UserSerializer
 from purchase.serializers import SupplierSerializer, OrderSerializer, LineItemSerializer
 from purchase.models import Supplier, Order, LineItem
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 class UserViewSet(viewsets.ModelViewSet):
