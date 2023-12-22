@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 
 class Supplier(models.Model):
@@ -15,13 +16,38 @@ class Supplier(models.Model):
         return self.name
 
 
+class OrderNumber(models.Model):
+    pass
+
+
 class Order(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-    order_time = models.DateTimeField()
-    order_number = models.IntegerField(db_index=True)
+    order_time = models.DateTimeField(editable=False)
+    order_number = models.OneToOneField(
+        OrderNumber, on_delete=models.CASCADE, editable=False)
+
+    # Calculated Feild can be added as property
     total_quantity = models.IntegerField(validators=[MinValueValidator(0)])
     total_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     total_tax = models.FloatField(validators=[MinValueValidator(0.0)])
+
+    def save(self, *args, **kwargs):
+        # Check if the order_number is not set
+        if not self.order_number:
+            # Create a new OrderNumber instance
+            order_number_instance = OrderNumber.objects.create()
+            self.order_number = order_number_instance
+            self.order_time = timezone.now()
+
+        # Calculate total_quantity, total_amount, and total_tax based on LineItems
+        self.total_quantity = sum(
+            item.quantity for item in self.line_items.all())
+        self.total_amount = sum(
+            item.line_total for item in self.line_items.all())
+        self.total_tax = sum(
+            item.tax_amount for item in self.line_items.all())
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Order"
@@ -36,7 +62,7 @@ class LineItem(models.Model):
     item_name = models.CharField(max_length=1024)
     quantity = models.IntegerField(validators=[MinValueValidator(0)])
     price_without_tax = models.FloatField(validators=[MinValueValidator(0.0)])
-    tax_name = models.IntegerField(validators=[MinValueValidator(0)])
+    tax_name = models.CharField(max_length=1024)
     tax_amount = models.FloatField(validators=[MinValueValidator(0.0)])
     line_total = models.FloatField(validators=[MinValueValidator(0.0)])
     purchase_order = models.ForeignKey(

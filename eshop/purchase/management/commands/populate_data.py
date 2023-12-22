@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from purchase.models import Supplier, Order, LineItem
+from purchase.models import Supplier, Order, LineItem, OrderNumber
 
 
 class Command(BaseCommand):
@@ -18,14 +18,8 @@ class Command(BaseCommand):
         for supplier_data in suppliers_data:
             supplier = Supplier.objects.create(**supplier_data)
 
-            # Sample order data
             order_data = {
                 "supplier": supplier,
-                "order_time": "2023-01-01T12:00:00",  # Replace with actual date and time
-                "order_number": 1,  # Replace with a unique order number
-                "total_quantity": 10,
-                "total_amount": 100.0,
-                "total_tax": 10.0,
             }
 
             # Create Order instance

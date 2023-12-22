@@ -30,7 +30,9 @@ class LineItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     supplier = SupplierSerializer()
     line_items = LineItemSerializer(many=True)
+    order_number = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Order
         fields = '__all__'
+        read_only_fields = ['total_quantity', 'total_amount', 'total_tax']
