@@ -68,9 +68,12 @@ class LineItem(models.Model):
     price_without_tax = models.FloatField(validators=[MinValueValidator(0.0)])
     tax_name = models.CharField(max_length=1024)
     tax_amount = models.FloatField(validators=[MinValueValidator(0.0)])
-    line_total = models.FloatField(validators=[MinValueValidator(0.0)])
     purchase_order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name='line_items')
+
+    @property
+    def line_total(self):
+        return self.tax_amount + self.price_without_tax
 
     class Meta:
         verbose_name = "Line Item"

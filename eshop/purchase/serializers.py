@@ -22,6 +22,9 @@ class SupplierSerializer(serializers.ModelSerializer):
 
 
 class LineItemSerializer(serializers.ModelSerializer):
+    # computed field
+    line_total = serializers.ReadOnlyField()
+
     class Meta:
         model = LineItem
         fields = '__all__'
