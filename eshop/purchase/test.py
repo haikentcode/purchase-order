@@ -22,16 +22,13 @@ class ConsoleColors:
     CYAN = '\033[96m'
 
 
-DEBUG_PRINT = True
-
-
-def pprint(response):
-
-    if DEBUG_PRINT:
+def pprint(response, flag=False):
+    if flag:
         try:
             content = json.loads(response.content.decode('utf-8'))
             pretty_content = json.dumps(content, indent=2)
-            # print(f"{ConsoleColors.YELLOW}Response Content:\n{pretty_content}{ConsoleColors.RESET}")
+            print(
+                f"{ConsoleColors.YELLOW}Response Content:\n{pretty_content}{ConsoleColors.RESET}")
 
         except json.JSONDecodeError:
             print(
@@ -339,6 +336,7 @@ class OrderAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
 
         supplier_name = 'Testt SSupplier'
+
         response = self.client.get(
             reverse('order-list'), {'supplier_name': supplier_name})
         pprint(response)
@@ -385,3 +383,98 @@ class OrderAPITestCase(APITestCase):
         pprint(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
+
+    def test_update_order(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        updated_data = {
+            "supplier": {
+                "name": "Updated Supplier",
+                "email": "updated@example.com",
+            },
+            "line_items": [
+                {
+                    "item_name": "Updated Item",
+                    "quantity": 4,
+                    "price_without_tax": 12.0,
+                    "tax_name": "VAT 10%",
+                    "tax_amount": 1.2
+                },
+            ]
+        }
+
+        response = self.client.put(
+            reverse('order-detail', args=[self.order.id]), updated_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Validate the updated order
+        self.order.refresh_from_db()
+        self.assertNotEqual(self.order.supplier.name,
+                            updated_data['supplier']['name'])  # updated -> id = None
+
+        # Validate the updated line item
+        updated_line_item = self.order.line_items.first()
+        self.assertEqual(updated_line_item.item_name,
+                         updated_data['line_items'][0]['item_name'])
+        self.assertEqual(updated_line_item.quantity,
+                         updated_data['line_items'][0]['quantity'])
+        self.assertEqual(updated_line_item.tax_amount,
+                         updated_data['line_items'][0]['tax_amount'])
+
+    def test_update_order_pre_exist_line_item_update(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        pre_exist_line_item = self.order.line_items.first()
+
+        line_item_updated_data = {
+            "id": pre_exist_line_item.id,
+            "item_name": pre_exist_line_item.item_name + " Updated",
+            "quantity": pre_exist_line_item.quantity + 1,
+            "price_without_tax": pre_exist_line_item.price_without_tax + 1,
+            "tax_name": "VAT 30%",
+            "tax_amount": pre_exist_line_item.tax_amount + 1
+        }
+
+        suplier_updated_name = "Updated Supplier Name"
+        updated_data = {
+            "supplier": {
+                "id": self.order.supplier.id,
+                "name": suplier_updated_name,
+                "email": "updated@example.com",
+            },
+            "line_items": [line_item_updated_data,
+                           {
+                               "item_name": "Updated Item -2 ",
+                               "quantity": 4,
+                               "price_without_tax": 12.0,
+                               "tax_name": "VAT 10%",
+                               "tax_amount": 1.2
+                           },
+                           ]
+        }
+
+        response = self.client.put(
+            reverse('order-detail', args=[self.order.id]), updated_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Validate the updated order
+        self.order.refresh_from_db()
+
+        self.assertEqual(self.order.supplier.name,
+                         updated_data['supplier']['name'])
+
+        # Validate the updated line item
+        pre_exist_line_item.refresh_from_db()
+
+        self.assertEqual(pre_exist_line_item.id,
+                         updated_data['line_items'][0]['id'])
+        self.assertEqual(pre_exist_line_item.item_name,
+                         updated_data['line_items'][0]['item_name'])
+        self.assertEqual(pre_exist_line_item.quantity,
+                         updated_data['line_items'][0]['quantity'])
+        self.assertEqual(pre_exist_line_item.tax_amount,
+                         updated_data['line_items'][0]['tax_amount'])

@@ -38,6 +38,12 @@ class LineItemSerializer(serializers.ModelSerializer):
             'purchase_order': {'required': False},
         }
 
+    def to_internal_value(self, data):
+        if self.instance is None:  # Check if creating a new instance
+            return {**super().to_internal_value(data), 'id': data.get('id')}
+        else:  # Updating existing instance, don't include 'id' in internal representation
+            return super().to_internal_value(data)
+
 
 class OrderSerializer(serializers.ModelSerializer):
     supplier = SupplierSerializer()
@@ -49,7 +55,7 @@ class OrderSerializer(serializers.ModelSerializer):
     total_amount = serializers.ReadOnlyField()
     total_tax = serializers.ReadOnlyField()
 
-    def create(self, validated_data):
+    def supplierCheck(self, validated_data):
         supplier_data = validated_data.pop('supplier')
         supplier_id = supplier_data.get('id')
 
@@ -66,6 +72,12 @@ class OrderSerializer(serializers.ModelSerializer):
             # Create a new supplier if it doesn't exist
             supplier = Supplier.objects.create(**supplier_data)
 
+        return supplier
+
+    def create(self, validated_data):
+
+        supplier = self.supplierCheck(validated_data)
+
         line_items_data = validated_data.pop('line_items')
 
         order = Order.objects.create(supplier=supplier, **validated_data)
@@ -74,6 +86,36 @@ class OrderSerializer(serializers.ModelSerializer):
             LineItem.objects.create(purchase_order=order, **line_item_data)
 
         return order
+
+    def update(self, instance, validated_data):
+        supplier = self.supplierCheck(validated_data)
+        line_items_data = validated_data.pop('line_items')
+
+        # Update the line items
+        updated_line_item_ids = set()
+        for line_item_data in line_items_data:
+            line_item_id = line_item_data.get('id')
+            if line_item_id:
+                # If line item ID is provided, update the existing line item
+                line_item = LineItem.objects.get(id=line_item_id)
+                for field_name, field_value in line_item_data.items():
+                    setattr(line_item, field_name, field_value)
+                line_item.save()
+                updated_line_item_ids.add(line_item_id)
+            else:
+                # If no line item ID is provided, create a new line item
+                new_line_item = LineItem.objects.create(
+                    purchase_order=instance, **line_item_data)
+
+                updated_line_item_ids.add(new_line_item.id)
+
+        # Delete line items that are not present in the updated data
+        instance.line_items.exclude(id__in=updated_line_item_ids).delete()
+
+        # Update other fields of the order if needed
+        instance.save()
+
+        return instance
 
     class Meta:
         model = Order
