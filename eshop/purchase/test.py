@@ -478,3 +478,23 @@ class OrderAPITestCase(APITestCase):
                          updated_data['line_items'][0]['quantity'])
         self.assertEqual(pre_exist_line_item.tax_amount,
                          updated_data['line_items'][0]['tax_amount'])
+
+    def test_delete_order_by_id(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        # Construct the URL for deleting the test order by its ID
+        url = reverse('order-list') + f'{self.order.id}/'
+
+        # Send a DELETE request to delete the order
+        response = self.client.delete(url)
+
+        # Check if the response status code is 204 (No Content), indicating a successful deletion
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Optionally, check if the order has been deleted from the database
+        with self.assertRaises(Order.DoesNotExist):
+            Order.objects.get(id=self.order.id)
+
+        # Check if the associated supplier still exists
+        self.assertTrue(Supplier.objects.filter(id=self.supplier.id).exists())
