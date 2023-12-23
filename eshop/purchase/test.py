@@ -197,7 +197,7 @@ class LineItemViewSetTestCase(APITestCase):
             LineItem.objects.get(id=self.line_item.id)
 
 
-class OrderAPITestCase(TestCase):
+class OrderAPITestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username='testuser', password='testpassword')
@@ -205,9 +205,6 @@ class OrderAPITestCase(TestCase):
         self.client = APIClient()
 
     def test_create_order(self):
-        # Log in the user to establish a session
-        self.client.login(username='testuser', password='testpassword')
-
         # Log in the user to establish a session
         self.client.login(username='testuser', password='testpassword')
 
@@ -234,14 +231,11 @@ class OrderAPITestCase(TestCase):
             ]
         }
 
-        response = self.client.post('/purchase/orders/', data, format='json')
-        pprint(response)
+        response = self.client.post(reverse('order-list'), data, format='json')
+        pprint(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_order_without_line_items(self):
-        # Log in the user to establish a session
-        self.client.login(username='testuser', password='testpassword')
-
         # Log in the user to establish a session
         self.client.login(username='testuser', password='testpassword')
 
@@ -252,14 +246,11 @@ class OrderAPITestCase(TestCase):
             },
         }
 
-        response = self.client.post('/purchase/orders/', data, format='json')
-        pprint(response)
+        response = self.client.post(reverse('order-list'), data, format='json')
+        pprint(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_order_without_supplier(self):
-        # Log in the user to establish a session
-        self.client.login(username='testuser', password='testpassword')
-
         # Log in the user to establish a session
         self.client.login(username='testuser', password='testpassword')
 
@@ -275,14 +266,11 @@ class OrderAPITestCase(TestCase):
             ]
         }
 
-        response = self.client.post('/purchase/orders/', data, format='json')
-        pprint(response)
+        response = self.client.post(reverse('order-list'), data, format='json')
+        pprint(response.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_order_with_pre_exist_supplier(self):
-        # Log in the user to establish a session
-        self.client.login(username='testuser', password='testpassword')
-
         # Log in the user to establish a session
         self.client.login(username='testuser', password='testpassword')
 
@@ -296,9 +284,7 @@ class OrderAPITestCase(TestCase):
         }
 
         data = {
-            "supplier": {
-                **updated_supplier_data
-            },
+            "supplier": updated_supplier_data,
             "line_items": [
                 {
                     "item_name": "test prod",
@@ -310,8 +296,9 @@ class OrderAPITestCase(TestCase):
             ]
         }
 
-        response = self.client.post('/purchase/orders/', data, format='json')
-        content = json.loads(response.content.decode('utf-8'))
+        response = self.client.post(reverse('order-list'), data, format='json')
+        content = response.data
+        pprint(content)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertEqual(
