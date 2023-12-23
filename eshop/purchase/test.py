@@ -498,3 +498,20 @@ class OrderAPITestCase(APITestCase):
 
         # Check if the associated supplier still exists
         self.assertTrue(Supplier.objects.filter(id=self.supplier.id).exists())
+
+    def test_update_order_number(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        # Attempt to update the order_number field
+        url = reverse('order-detail', args=[self.order.id])
+        # Provide an arbitrary order_number id
+        data = {'order_number': {'id': 123}}
+        response = self.client.patch(url, data, format='json')
+
+        # Check if the response status code is 400 (Bad Request)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Optionally, check if the order_number field remains unchanged
+        self.test_order.refresh_from_db()
+        self.assertEqual(self.test_order.order_number, self.order_number)
