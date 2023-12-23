@@ -32,7 +32,6 @@ class Command(BaseCommand):
                 "price_without_tax": 20.0,
                 "tax_name": 1,
                 "tax_amount": 2.0,
-                "line_total": 110.0,
                 "purchase_order": order,
             }
 

@@ -26,14 +26,9 @@ class Order(models.Model):
     order_number = models.OneToOneField(
         OrderNumber, on_delete=models.CASCADE, editable=False)
 
-    # Calculated Feild can be added as property
-    total_quantity = models.IntegerField(validators=[MinValueValidator(0)])
-    total_amount = models.FloatField(validators=[MinValueValidator(0.0)])
-    total_tax = models.FloatField(validators=[MinValueValidator(0.0)])
-
     def save(self, *args, **kwargs):
         # Check if the order_number is not set
-        if not self.order_number:
+        if not hasattr(self, 'order_number'):
             # Create a new OrderNumber instance
             order_number_instance = OrderNumber.objects.create()
             self.order_number = order_number_instance

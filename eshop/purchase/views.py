@@ -4,6 +4,7 @@ from purchase.serializers import GroupSerializer, UserSerializer
 from purchase.serializers import SupplierSerializer, OrderSerializer, LineItemSerializer
 from purchase.models import Supplier, Order, LineItem
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from purchase.filters import OrderFilter
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -34,6 +35,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Order.objects.all()
+    filterset_class = OrderFilter
 
 
 class LineItemViewSet(viewsets.ModelViewSet):
