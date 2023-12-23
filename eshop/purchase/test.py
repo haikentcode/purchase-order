@@ -22,7 +22,7 @@ class ConsoleColors:
     CYAN = '\033[96m'
 
 
-DEBUG_PRINT = False
+DEBUG_PRINT = True
 
 
 def pprint(response):
@@ -204,6 +204,17 @@ class OrderAPITestCase(APITestCase):
 
         self.client = APIClient()
 
+        # Create a test supplier
+        self.supplier = Supplier.objects.create(
+            name='Test Supplier', email='test@example.com')
+
+        # Create a test order with line items
+        self.order = Order.objects.create(supplier=self.supplier)
+        LineItem.objects.create(
+            item_name='Test Item 1', quantity=2, price_without_tax=5.0, tax_name='GST', tax_amount=1.0, purchase_order=self.order)
+        LineItem.objects.create(
+            item_name='Test Item 2', quantity=3, price_without_tax=8.0, tax_name='VAT', tax_amount=1.5, purchase_order=self.order)
+
     def test_create_order(self):
         # Log in the user to establish a session
         self.client.login(username='testuser', password='testpassword')
@@ -232,7 +243,7 @@ class OrderAPITestCase(APITestCase):
         }
 
         response = self.client.post(reverse('order-list'), data, format='json')
-        pprint(response.data)
+        pprint(response)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_order_without_line_items(self):
@@ -247,7 +258,7 @@ class OrderAPITestCase(APITestCase):
         }
 
         response = self.client.post(reverse('order-list'), data, format='json')
-        pprint(response.data)
+        pprint(response)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_order_without_supplier(self):
@@ -267,7 +278,7 @@ class OrderAPITestCase(APITestCase):
         }
 
         response = self.client.post(reverse('order-list'), data, format='json')
-        pprint(response.data)
+        pprint(response)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_order_with_pre_exist_supplier(self):
@@ -297,13 +308,80 @@ class OrderAPITestCase(APITestCase):
         }
 
         response = self.client.post(reverse('order-list'), data, format='json')
-        content = response.data
-        pprint(content)
+        pprint(response)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        content = response.data
         self.assertEqual(
             updated_supplier_data["id"], content["supplier"]["id"])
         self.assertEqual(
             updated_supplier_data["name"], content["supplier"]['name'])
         self.assertEqual(
             updated_supplier_data["email"], content["supplier"]['email'])
+
+    def test_filter_orders_by_supplier_name(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        # Test filter by supplier_name
+        supplier_name = 'Test Supplier'
+        response = self.client.get(
+            reverse('order-list'), {'supplier_name': supplier_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+        supplier_name = 'Test'
+        response = self.client.get(
+            reverse('order-list'), {'supplier_name': supplier_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+        supplier_name = 'Testt SSupplier'
+        response = self.client.get(
+            reverse('order-list'), {'supplier_name': supplier_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    def test_filter_orders_by_item_name(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        # Test filter by item_name
+        item_name = 'Test Item 1'
+        response = self.client.get(
+            reverse('order-list'), {'item_name': item_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+        # Test filter by item_name
+        item_name = 'Test'
+        response = self.client.get(
+            reverse('order-list'), {'item_name': item_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+        # Test filter by item_name
+        item_name = 'TRest ItMem'
+        response = self.client.get(
+            reverse('order-list'), {'item_name': item_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    def test_filter_orders_by_supplier_and_item_name(self):
+        # Log in the user to establish a session
+        self.client.login(username='testuser', password='testpassword')
+
+        # Test filter by both supplier_name and item_name
+        supplier_name = 'Test Supplier'
+        item_name = 'Test Item 1'
+        response = self.client.get(
+            reverse('order-list'), {'supplier_name': supplier_name, 'item_name': item_name})
+        pprint(response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
