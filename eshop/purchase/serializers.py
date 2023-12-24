@@ -88,7 +88,10 @@ class OrderSerializer(serializers.ModelSerializer):
         return order
 
     def update(self, instance, validated_data):
+
         supplier = self.supplierCheck(validated_data)
+        instance.supplier = supplier
+
         line_items_data = validated_data.pop('line_items')
 
         # Update the line items
@@ -120,4 +123,5 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = '__all__'
-        read_only_fields = ['total_quantity', 'total_amount', 'total_tax']
+        read_only_fields = ['total_quantity',
+                            'total_amount', 'total_tax']

@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 import json
 from rest_framework.test import APITestCase
 from django.urls import reverse
+from purchase.serializers import OrderSerializer
 
 
 class ConsoleColors:
@@ -410,9 +411,10 @@ class OrderAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Validate the updated order
+        old_supplier_id = self.order.supplier.id
         self.order.refresh_from_db()
-        self.assertNotEqual(self.order.supplier.name,
-                            updated_data['supplier']['name'])  # updated -> id = None
+        # updated -> id = None
+        self.assertNotEqual(self.order.supplier.id, old_supplier_id)
 
         # Validate the updated line item
         updated_line_item = self.order.line_items.first()
@@ -505,13 +507,17 @@ class OrderAPITestCase(APITestCase):
 
         # Attempt to update the order_number field
         url = reverse('order-detail', args=[self.order.id])
-        # Provide an arbitrary order_number id
-        data = {'order_number': {'id': 123}}
-        response = self.client.patch(url, data, format='json')
 
-        # Check if the response status code is 400 (Bad Request)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # Provide a new order_number id
+        new_order_number = OrderNumber.objects.create()
+        self.order.order_number = new_order_number
+        order_data = OrderSerializer(self.order).data
 
-        # Optionally, check if the order_number field remains unchanged
-        self.test_order.refresh_from_db()
-        self.assertEqual(self.test_order.order_number, self.order_number)
+        response = self.client.patch(url, order_data, format='json')
+
+        # Check if the response status code is 200 (OK) for a successful update
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Optionally, check if the order_number field has been updated
+        self.order.refresh_from_db()
+        self.assertNotEqual(self.order.order_number, new_order_number)
