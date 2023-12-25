@@ -14,7 +14,7 @@
 
 ### Prerequisites
 
-- Python 3.x
+- Python 3.x ( Tested on 3.11.2 and 3.11.5 )
 - Pipenv (optional but recommended for managing dependencies)
 
 ### Installation
