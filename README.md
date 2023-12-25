@@ -82,6 +82,32 @@ Ran 18 tests in 21.744s
 OK
 Destroying test database for alias 'default'...
 ```
+```
+(sumtracker)../purchase-order $ python manage.py test --verbosity 1 --force-color
+....
+
+
+test_create_line_item (purchase.test.LineItemViewSetTestCase.test_create_line_item) ... ok
+test_delete_line_item (purchase.test.LineItemViewSetTestCase.test_delete_line_item) ... ok
+test_get_line_item (purchase.test.LineItemViewSetTestCase.test_get_line_item) ... ok
+test_update_line_item (purchase.test.LineItemViewSetTestCase.test_update_line_item) ... ok
+test_create_order (purchase.test.OrderAPITestCase.test_create_order) ... ok
+test_create_order_with_pre_exist_supplier (purchase.test.OrderAPITestCase.test_create_order_with_pre_exist_supplier) ... ok
+test_create_order_without_line_items (purchase.test.OrderAPITestCase.test_create_order_without_line_items) ... ok
+test_create_order_without_supplier (purchase.test.OrderAPITestCase.test_create_order_without_supplier) ... ok
+test_delete_order_by_id (purchase.test.OrderAPITestCase.test_delete_order_by_id) ... ok
+test_filter_orders_by_item_name (purchase.test.OrderAPITestCase.test_filter_orders_by_item_name) ... ok
+test_filter_orders_by_supplier_and_item_name (purchase.test.OrderAPITestCase.test_filter_orders_by_supplier_and_item_name) ... ok 
+test_filter_orders_by_supplier_name (purchase.test.OrderAPITestCase.test_filter_orders_by_supplier_name) ... ok
+test_update_order (purchase.test.OrderAPITestCase.test_update_order) ... ok
+test_update_order_number (purchase.test.OrderAPITestCase.test_update_order_number) ... ok
+test_update_order_pre_exist_line_item_update (purchase.test.OrderAPITestCase.test_update_order_pre_exist_line_item_update) ... ok 
+test_create_supplier (purchase.test.SupplierAPITestCase.test_create_supplier) ... ok
+test_delete_supplier (purchase.test.SupplierAPITestCase.test_delete_supplier) ... ok
+test_update_supplier (purchase.test.SupplierAPITestCase.test_update_supplier) ... ok
+
+....
+```
 
 ## Project Structure
 
