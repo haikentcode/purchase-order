@@ -13,5 +13,3 @@ router.register(r'line_items', LineItemViewSet)
 urlpatterns = [
     path('', include(router.urls)),
 ]
-
-urlpatterns += router.urls

@@ -139,6 +139,5 @@ REST_FRAMEWORK = {
 
 
 SPECTACULAR_SETTINGS = {
-    'SCHEMA_PATH_PREFIX': r'^/api/',
-    'EXCLUDED_RIVERS': ['users', 'groups'],
+    'SCHEMA_PATH_PREFIX': r'^/purchase/',
 }

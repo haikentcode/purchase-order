@@ -26,12 +26,18 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 
 class SupplierViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that supplier to be viewed or edited.
+    """
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
 class OrderViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that order to be viewed or edited.
+    """
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Order.objects.all()
@@ -39,6 +45,9 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 
 class LineItemViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that line item to be viewed or edited.
+    """
     queryset = LineItem.objects.all()
     serializer_class = LineItemSerializer
     permission_classes = [permissions.IsAuthenticated]
