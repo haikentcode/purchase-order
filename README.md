@@ -119,7 +119,7 @@ Destroying test database for alias 'default'...
 # API Endpoints
 ## The project includes the following API endpoints:
 ```
-Suppliers: /purchase/suppliers// - 
+Suppliers: /purchase/suppliers/ - 
 Orders: /purchase/orders/ - 
 Line Items: /purchase/line_items/ - 
 
