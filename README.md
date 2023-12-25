@@ -1,7 +1,5 @@
 # E-Shop Purchase orders
 
-A brief description of your Django project.
-
 ## Table of Contents
 
 - [Getting Started](#getting-started)
