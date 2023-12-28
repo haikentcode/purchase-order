@@ -25,6 +25,17 @@ class SupplierSerializer(serializers.ModelSerializer):
             return {**super().to_internal_value(data), 'id': data.get('id')}
         else:  # Updating existing instance, don't include 'id' in internal representation
             return super().to_internal_value(data)
+    
+    def create(self, validated_data):
+        instance_id = validated_data.get('id')
+        
+        if instance_id:
+            # If an ID is provided, try to update the instance
+            instance, created = Supplier.objects.update_or_create(id=instance_id, defaults=validated_data)
+            return instance
+
+        # If no ID is provided, create a new instance
+        return Supplier.objects.create(**validated_data)
 
 
 class LineItemSerializer(serializers.ModelSerializer):
@@ -55,32 +66,19 @@ class OrderSerializer(serializers.ModelSerializer):
     total_amount = serializers.ReadOnlyField()
     total_tax = serializers.ReadOnlyField()
 
-    def supplierCheck(self, validated_data):
-        supplier_data = validated_data.pop('supplier')
-        supplier_id = supplier_data.get('id')
 
-        # Check if a supplier with the given ID already exists
-        try:
-            supplier = Supplier.objects.get(id=supplier_id)
-
-            # Update the existing supplier with the new data
-            for key, value in supplier_data.items():
-                setattr(supplier, key, value)
-
-            supplier.save()
-        except Supplier.DoesNotExist:
-            # Create a new supplier if it doesn't exist
-            supplier = Supplier.objects.create(**supplier_data)
-
-        return supplier
 
     def create(self, validated_data):
 
-        supplier = self.supplierCheck(validated_data)
+        supplier_data = validated_data.pop('supplier')
+        supplier_serializer = SupplierSerializer(data=supplier_data)
+        supplier_serializer.is_valid(raise_exception=True)
+        supplier_serializer.save()
+
 
         line_items_data = validated_data.pop('line_items')
 
-        order = Order.objects.create(supplier=supplier, **validated_data)
+        order = Order.objects.create(supplier=supplier_serializer.instance, **validated_data)
 
         for line_item_data in line_items_data:
             LineItem.objects.create(purchase_order=order, **line_item_data)
@@ -89,8 +87,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
 
-        supplier = self.supplierCheck(validated_data)
-        instance.supplier = supplier
+        supplier_data = validated_data.pop('supplier')
+        supplier_serializer = SupplierSerializer(data=supplier_data)
+        supplier_serializer.is_valid(raise_exception=True)
+        supplier_serializer.save()
+
+        instance.supplier = supplier_serializer.instance
 
         line_items_data = validated_data.pop('line_items')
 
