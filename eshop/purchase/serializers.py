@@ -66,19 +66,21 @@ class OrderSerializer(serializers.ModelSerializer):
     total_amount = serializers.ReadOnlyField()
     total_tax = serializers.ReadOnlyField()
 
-
-
-    def create(self, validated_data):
-
+    
+    def create_or_update_supplier(self,validated_data):
         supplier_data = validated_data.pop('supplier')
         supplier_serializer = SupplierSerializer(data=supplier_data)
         supplier_serializer.is_valid(raise_exception=True)
         supplier_serializer.save()
+        return supplier_serializer.instance
 
+
+    def create(self, validated_data):
+        supplier = self.create_or_update_supplier(validated_data)
 
         line_items_data = validated_data.pop('line_items')
 
-        order = Order.objects.create(supplier=supplier_serializer.instance, **validated_data)
+        order = Order.objects.create(supplier=supplier, **validated_data)
 
         line_item_serializer = LineItemSerializer(data=line_items_data, many=True)
         line_item_serializer.is_valid(raise_exception=True)
@@ -89,12 +91,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
 
-        supplier_data = validated_data.pop('supplier')
-        supplier_serializer = SupplierSerializer(data=supplier_data)
-        supplier_serializer.is_valid(raise_exception=True)
-        supplier_serializer.save()
+        supplier = self.create_or_update_supplier(validated_data)
 
-        instance.supplier = supplier_serializer.instance
+        instance.supplier = supplier
 
         line_items_data = validated_data.pop('line_items')
 
