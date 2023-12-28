@@ -80,8 +80,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
         order = Order.objects.create(supplier=supplier_serializer.instance, **validated_data)
 
-        for line_item_data in line_items_data:
-            LineItem.objects.create(purchase_order=order, **line_item_data)
+        line_item_serializer = LineItemSerializer(data=line_items_data, many=True)
+        line_item_serializer.is_valid(raise_exception=True)
+        line_item_serializer.save(purchase_order=order)
+
 
         return order
 
